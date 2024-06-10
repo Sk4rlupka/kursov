@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о пользователях</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+        .block {
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1 1 30%;
+            min-width: 250px;
+        }
+        .full-width {
+            flex: 1 1 100%;
+            min-width: 250px;
+        }
+        .head {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .info-element {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            padding: 4px;
+            color: #ffffff;
+            background-color: #525252;
+        }
+        .info-element:hover {
+            background-color: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="head">Добро пожаловать на автопарковку</div>
+    <div class="container">
+        <div class="block">
+            <h2>Список пользователей:</h2>
+            {% for user in users %}
+                <p class="info-element" onclick="fillInfo('{{ user.discount.name }}', '{{ user.discount.percentage }}', '{{ user.discount.description }}',
+                '{{ user.parking_info.kind_of_car }}', '{{ user.parking_info.date_of_entry }}', '{{ user.parking_info.date_of_departure }}',
+                '{{ user.parking_info.date_paid_for }}', '{{ user.parking_info.tariff_price.price_per_hour }}', '{{ user.parking_info.id }}')">
+                    {{ user.surname }} {{ user.name }} {{ user.patronymic }}
+                </p>
+            {% endfor %}
+        </div>
+        <div class="block">
+            <h2>Скидка выбранного пользователя:</h2>
+            <p id="discountName">название скидки</p>
+            <p id="discountValue">числовое значение скидки</p>
+            <p id="discountDescription">описание скидки</p>
+            <p>{{ qwe }}</p>
+        </div>
+        <div class="block">
+            <h2>Информация о транспортном средстве выбранного пользователя:</h2>
+            <p id="car_kind">Марка машины</p>
+            <p id="dateOfEntry">Дата въезда машины на парковку</p>
+            <p id="dateOfDeparture">Дата выезда машины из парковки</p>
+            <p id="datePaidFor">До какого числа заплачено за парковку</p>
+            <p id="pricePerHour">Стоимость стоянки руб./час</p>
+        </div>
+        <div class="block full-width">
+            <h2>Задолженность пользователя:</h2>
+            <p id="userArrears">Задолженность за парковку машины пользователя в рублях</p>
+        </div>
+    </div>
+    <script>
+        fillInfo = (
+            discount_name,
+            discount_value,
+            discount_description,
+            car_kind,
+            date_of_entry,
+            date_of_departure,
+            date_paid_for,
+            price_per_hour,
+            parking_info_id
+        ) => {
+            document.getElementById("discountName").textContent = "Название: " + discount_name;
+            document.getElementById("discountValue").textContent = "Значение: " + discount_value * 100 + "%";
+            document.getElementById("discountDescription").textContent = "Описание: " + discount_description;
+            document.getElementById("car_kind").textContent = "Марка машины: " + car_kind;
+            document.getElementById("dateOfEntry").textContent = "Дата въезда: " + date_of_entry;
+            document.getElementById("dateOfDeparture").textContent = date_of_departure != "None" ? "Дата выезда: " + date_of_departure : "Машина всё ещё на парковке";
+            document.getElementById("datePaidFor").textContent = date_paid_for != "None" ? "Оплачено до: " + date_paid_for : "Парковка ещё не была оплачена";
+            document.getElementById("pricePerHour").textContent = "Тариф: " + price_per_hour + " руб./час";
+
+            fetch('http://localhost:8005/parking_info/arrears/' + parking_info_id)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              document.getElementById("userArrears").textContent = data;
+            })
+            .catch(error => {
+              console.error('Произошла ошибка при выполнении запроса:', error);
+            });
+        }
+    </script>
+</body>
+</html>

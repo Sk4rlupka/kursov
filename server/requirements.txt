@@ -1,0 +1,11 @@
+fastapi
+fastapi-users
+fastapi-users-db-sqlalchemy
+uvicorn
+SQLAlchemy
+asyncpg
+alembic
+Werkzeug
+itsdangerous
+pydantic
+python-multipart

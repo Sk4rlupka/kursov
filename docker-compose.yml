@@ -1,0 +1,31 @@
+version: '3.7'
+
+
+services:
+  kr_server:
+    tty: true
+    container_name: kr_server
+    image: server
+    build:
+      context: ./server/
+    volumes:
+      - ./server/:/src/app
+    ports:
+      - "8005:8000"
+    command: sh -c "sleep 10 && alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --reload"
+    depends_on:
+      - kr_db
+    restart: always
+
+  kr_db:
+    container_name: kr_postgresql
+    image: postgres:15
+    restart: always
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+      - ./postgresql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_HOST: kr_db
+      POSTGRES_DB: kr_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kr_db
