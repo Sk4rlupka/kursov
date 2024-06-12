@@ -40,8 +40,8 @@ async def get_users_arrears(parking_info_id: int, session: AsyncSession = Depend
     )
     parking_info = (await session.execute(parking_info_query)).scalar()
 
-    date_start = arking_info.date_paid_for.replace(tzinfo=None) if parking_info.date_paid_for else parking_info.date_of_entry.replace(tzinfo=None)
-    date_end = datetime.utcnow() if not parking_info.date_of_departure else parking_info.date_of_departure
+    date_start = parking_info.date_paid_for.replace(tzinfo=None) if parking_info.date_paid_for else parking_info.date_of_entry.replace(tzinfo=None)
+    date_end = datetime.utcnow() if not parking_info.date_of_departure else parking_info.date_of_departure.replace(tzinfo=None)
 
     hours = abs(date_start - date_end).total_seconds() / 3600.0
     price = hours * parking_info.tariff_price.price_per_hour
@@ -49,7 +49,12 @@ async def get_users_arrears(parking_info_id: int, session: AsyncSession = Depend
     if parking_info.owner.discount:
         price -= price * parking_info.owner.discount.percentage
 
-    return f"Задолженность в {round(price, 2)} руб." if date_end > date_start else f"Предоплата/cдача на {round(price, 2)}"
+    if date_end > date_start:
+        return f"Задолженность в {round(price, 2)} руб."
+    elif date_end < date_start:
+        return f"Предоплата/cдача на {round(price, 2)}"
+    else:
+        return "Задолженности нет"
 
 @router.post("/")
 async def add_parking_info(
